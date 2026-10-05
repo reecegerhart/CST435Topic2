@@ -251,13 +251,10 @@ The `predictions` table stores prediction audit information including the reques
 
 Row level security is enabled on the database tables. The FastAPI service uses the Supabase service role for operations that require write access, while the Streamlit application uses the Supabase anonymous key only for permitted read operations.
 
-## Testing
+## Testing and Reliability
 
-The project includes a Pytest test suite covering the API contract, prediction behavior, regression behavior, and Supabase integration.
+The project includes an automated Pytest test suite covering the API, regression behavior, and Supabase integration. The `test_apy.py` file contains tests for the FastAPI endpoints, including health checks, version information, schema validation, invalid prediction inputs, valid predictions, batch prediction row counts, and audit validation. The `test_regression.py` file contains frozen reference tests that verify the model produces a stable probability for a known input through both the prediction function and the API. The required tolerance for the frozen probability is ±0.001. The `test_supabase_roundtrip.py` file verifies that a successful prediction is written to the Supabase `predictions` table. The complete test suite currently contains 14 tests, and all 14 tests pass.
 
-The tests include validation of the `/predict` schema, validation of batch prediction row counts, a frozen reference prediction test, and a live Supabase test that verifies predictions are written to the database.
-
-The frozen reference test helps ensure that changes to the model or preprocessing pipeline do not unexpectedly change a known prediction.
 
 ## Project Structure
 
@@ -266,6 +263,7 @@ CST435Topic2/
 │
 ├── README.md
 ├── MODEL_CARD.md
+│
 ├── shared/
 │   └── schemas.py
 │
@@ -295,14 +293,17 @@ CST435Topic2/
 ├── tests/
 │   ├── conftest.py
 │   ├── make_fixture.py
-│   ├── test_api.py
+│   ├── test_apy.py
 │   ├── test_regression.py
-│   └── test_supabase.py
+│   └── test_supabase_roundtrip.py
 │
 ├── render.yaml
 ├── requirements-dev.txt
 └── .env.example
 ```
+
+The complete source code and project history are available in the [Income Insight GitHub repository](https://github.com/reecegerhart/CST435Topic2/tree/main).
+
 
 ## Deployment
 
@@ -324,13 +325,12 @@ The API health endpoint can be used to verify the deployment:
 
 ## Individual Contributions
 
-Individual contribution evidence should be documented separately for each team member. Contributions should include all significant work performed on the project, including dataset preparation, database development, model development, API development, Streamlit development, testing, deployment, documentation, and presentation work.
+This project was completed independently, so all project responsibilities were performed by me. My contributions include selecting and preparing the UCI Adult Income dataset, developing the Supabase database and migrations, implementing the scikit learn preprocessing pipeline, developing and training the PyTorch multilayer perceptron, creating the configurable model experiments, and evaluating the different model configurations.
 
-## Engineering Report
+I also developed the FastAPI backend and its prediction endpoints, implemented prediction logging and fairness auditing, developed the Streamlit user interface, and created the model performance visualizations. I wrote and ran the Pytest test suite, including API validation, batch prediction, regression testing, and Supabase integration testing. I configured the cloud deployment using Streamlit Community Cloud, Render, and Supabase and verified the deployed application.
 
-The final engineering report will discuss the model architecture, preprocessing decisions, activation function comparison, model performance, confusion matrix results, feature importance, calibration, fairness results, and responsible deployment considerations.
+Finally, I completed the project documentation, Model Card, engineering report, model comparison analysis, fairness analysis, and product presentation materials. All code, testing, deployment, documentation, and analysis in this repository represent my individual work.
 
-The report will also discuss the implications of the model from a Christian worldview, including which group is treated worse by the model and what responsibility the development team has toward that group before deployment.
 
 ## Product Presentation
 
@@ -340,48 +340,72 @@ Each team member will provide their own presentation video as required by the as
 
 ## Project Status
 
-The original three cloud template has been substantially modified into the Income Insight Adult Income classification application.
+The Income Insight application is substantially complete and has been deployed across Streamlit Community Cloud, Render, and Supabase. The project now uses the real UCI Adult Income dataset and includes a PyTorch multilayer perceptron with configurable architecture, scikit learn preprocessing, multiple training configurations, model comparison, FastAPI prediction endpoints, batch CSV prediction, prediction logging, fairness auditing, and Streamlit performance visualizations.
 
-Completed changes include the real Adult Income dataset, a multilayer neural network with multiple hidden layers, configurable model architecture, scikit learn preprocessing, command line training, model configuration comparisons, FastAPI prediction endpoints, batch CSV prediction, prediction logging, fairness auditing, Streamlit performance visualization, model documentation, and automated testing.
+The required automated testing has also been completed. The project currently has 14 Pytest tests covering API validation, batch prediction, regression testing, and Supabase integration, with all 14 tests passing. Model evaluation and fairness analysis have been completed using the deployed application. The final model achieves 85.8% accuracy, 74.9% precision, 61.2% recall, 67.3% F1 score, and a 0.910 ROC AUC. The fairness audit has also been completed, including false positive and false negative rates by sex.
 
-The remaining project work consists primarily of completing the final model comparisons, documenting the final performance and fairness results, completing the Model Card and engineering report, replacing the remaining deployment placeholders, and recording the required presentation videos.
 
-# Engineering Report
 
-## Decision Justifications
+## Engineering Report
 
-The Income Insight project uses a PyTorch multilayer perceptron to classify whether an individual earns more than $50K per year using information from the UCI Adult Income dataset. The final model uses two hidden layers with 128 and 64 neurons, ReLU activation, and a dropout rate of 0.20. The model achieved 85.8% accuracy, 74.9% precision, 61.2% recall, 67.3% F1 score, and a 0.910 ROC AUC on the held out test data. These results show that the model is effective at separating the two income classes, although it has more difficulty identifying individuals in the higher income class.
+### Decision Justifications
 
-Several configurations were tested to determine which architecture and regularization choices performed best. The baseline ReLU model achieved an F1 score of 0.673. A deeper ReLU model using four hidden layers achieved an F1 score of 0.674, while the GELU configuration achieved an F1 score of 0.669. The no dropout configuration achieved the highest F1 score at 0.683 and the highest recall at 64.6%, but its calibration error was higher at 0.013 compared with 0.007 for the active baseline. GELU therefore did not meaningfully outperform ReLU. The differences between the configurations were relatively small, but the baseline ReLU model provided a strong balance between predictive performance and calibration.
+The Income Insight project uses a PyTorch multilayer perceptron to classify whether an individual earns more than $50K per year using information from the UCI Adult Income dataset. The selected model uses two hidden layers with 128 and 64 neurons, ReLU activation, and a dropout rate of 0.20. On the held out test data, the model achieved 85.8% accuracy, 74.9% precision, 61.2% recall, 67.3% F1 score, and a 0.910 ROC AUC. These results indicate that the model can effectively distinguish between the two income classes, although it has more difficulty identifying individuals who earn more than $50K.
 
-The confusion matrix provides additional information about the model's strengths and weaknesses. The model correctly classified 5,215 individuals in the <=50K class and 1,072 individuals in the >50K class. It produced 359 false positives and 681 false negatives. The larger number of false negatives shows that the model has more difficulty identifying people who actually earn more than $50K. Its 61.2% recall for this class means that a significant portion of higher income individuals are incorrectly classified as earning <=50K. This is important because accuracy alone would not reveal the difference in performance between the two classes.
+Several configurations were tested to compare activation functions, network depth, and dropout. The baseline ReLU configuration achieved an F1 score of 0.673. The deeper ReLU configuration achieved a slightly higher F1 score of 0.674, while the GELU configuration achieved an F1 score of 0.669. The no dropout configuration achieved the highest F1 score at 0.683 and the highest recall at 64.6%, but its expected calibration error was 0.013 compared with 0.007 for the selected baseline. GELU therefore did not meaningfully outperform ReLU. The baseline ReLU model was selected because it provided a strong balance between classification performance and probability calibration.
 
-Permutation importance was used to identify which features the model relied on most. Marital status had the highest importance at 0.06708, followed by capital gain at 0.03980, education level at 0.03752, and age at 0.02580. Occupation and hours per week had smaller importance values of 0.01677 and 0.01485. Native country had the lowest importance at 0.00112. These results indicate which features the model depends on for prediction, but they should not be interpreted as proof that these characteristics directly cause a person's income. The results instead describe how much model performance changes when individual features are randomly shuffled.
+The confusion matrix provides a clearer view of where the model struggles. The model correctly classified 5,215 individuals in the <=50K class and 1,072 individuals in the >50K class. It produced 359 false positives and 681 false negatives. Because there were substantially more false negatives than false positives, the model has more difficulty identifying individuals who actually earn more than $50K. Its recall for the >50K class was approximately 61.2%, meaning that a significant portion of individuals in that class were incorrectly classified as earning <=50K. This demonstrates why accuracy alone is not sufficient for evaluating the model.
 
-## Bias and Fairness Reflection
+Permutation importance was used to determine which features the model relied on most when making predictions. Marital status had the highest importance at 0.06708, followed by capital gain at 0.03980, education level at 0.03752, and age at 0.02580. Occupation had an importance of 0.01677, while hours per week had an importance of 0.01485. Relationship, capital loss, work class, and native country had smaller importance values. These results describe which features the model relies on for prediction and should not be interpreted as evidence that the features directly cause differences in income.
 
-The bias audit evaluated false positive and false negative rates by sex. The model produced a false positive rate of 2.4% for females and 8.8% for males. This represents a false positive rate gap of approximately 6.4 percentage points. The false negative rate was 42.9% for females and 38.0% for males, producing a gap of approximately 4.9 percentage points.
+### Bias and Fairness Reflection
 
-These results demonstrate that the model does not make errors equally across the two groups. Males experience more false positives, meaning the model is more likely to predict an income above $50K for a male whose actual income is <=50K. Females experience more false negatives, meaning the model is more likely to predict <=50K for a female whose actual income is above $50K. The relatively large false negative rate for females is particularly important because it indicates that the model may underestimate higher income outcomes for women. Because the Adult dataset contains known demographic disparities, these results should be considered before using the classifier in a real decision making environment. The model should not be used as the sole basis for employment, lending, compensation, or other decisions that could materially affect individuals.
+The bias audit evaluated false positive and false negative rates by sex. The model produced a false positive rate of 2.4% for females and 8.8% for males, resulting in a false positive rate gap of approximately 6.4 percentage points. The false negative rate was 42.9% for females and 38.0% for males, resulting in a false negative rate gap of approximately 4.9 percentage points.
 
-## Worldview Reflection
+These results demonstrate that the model does not make errors equally across the two groups. Males experience more false positives, meaning the model is more likely to predict an income above $50K for a male whose actual income is <=50K. Females experience more false negatives, meaning the model is more likely to predict <=50K for a female whose actual income is above $50K. The higher false negative rate for females is especially important because it indicates that the model has greater difficulty identifying women who actually belong to the >$50K income class.
 
-Christian ethics places an obligation on decision makers to pursue impartial judgment rather than simply accepting unequal outcomes when they appear in a model. Deuteronomy 1:17 states, "You shall not be partial in judgment" (English Standard Version Bible, 2001). The bias audit shows that women are treated worse with respect to false negatives because 42.9% of women who actually earn more than $50K were classified incorrectly, compared with 38.0% of men. At the same time, men experience the higher false positive rate. This means fairness cannot be described with a single number because different groups experience different types of errors.
+Because the Adult dataset contains demographic disparities, these differences should be investigated before using the model in a consequential setting. A difference in error rates does not by itself establish intentional discrimination, but it provides an important warning that should not be ignored. The model should not be used as the sole basis for decisions involving employment, lending, compensation, or other situations where an incorrect prediction could significantly affect a person.
 
-Before deployment, the group experiencing the higher false negative rate should not simply be expected to accept that disadvantage. The developers have a responsibility to investigate the source of the disparity, evaluate additional preprocessing and modeling approaches, and determine whether the model provides an acceptable level of fairness for its intended use. Human oversight should remain part of any consequential decision, and the model's predictions should be treated as estimates rather than unquestionable judgments.
+### Worldview Reflection
 
-## Testing and Reliability
+Christian ethics emphasizes impartial judgment as a responsibility rather than simply a preference. Deuteronomy 1:17 states, "You shall not be partial in judgment" (English Standard Version Bible, 2001). The bias audit shows that women are treated worse with respect to false negatives because 42.9% of women who actually earn more than $50K were incorrectly classified, compared with 38.0% of men. At the same time, men experience the higher false positive rate. Therefore, fairness cannot be represented by a single overall number because different groups can experience different types of errors.
 
-The project includes automated Pytest tests covering the required API behavior. The tests validate the schema used by `/predict`, verify that invalid and missing fields are rejected, and confirm that `/predict_batch` returns the same number of predictions as input rows. A frozen reference row is also used as a regression test to verify that the model's probability remains stable within the required tolerance of ±0.001. Finally, a live Supabase test confirms that a successful prediction creates a corresponding row in the predictions table. All 14 project tests currently pass.
+Before deployment, the development team owes the group experiencing the greater disadvantage careful investigation and responsible action. This includes examining the source of the disparity, testing alternative preprocessing and modeling approaches, monitoring performance across groups, and determining whether the model is appropriate for its intended use. Human oversight should remain part of any consequential decision, and model predictions should be treated as estimates rather than unquestionable judgments.
 
-## Deployment
+### Testing and Reliability
 
-The application is deployed using a three cloud architecture. Streamlit Cloud provides the user interface, Render hosts the FastAPI backend and model, and Supabase provides the database for Adult Income records, model runs, prediction logs, and audit information. This separation keeps the Streamlit application as a thin client while keeping the trained model and prediction logic behind the FastAPI service. The architecture also allows prediction requests and model runs to be recorded for later evaluation and auditing.
+The project includes automated Pytest tests covering the required API behavior. The tests validate the schema used by `/predict`, verify that invalid and missing fields are rejected, and confirm that `/predict_batch` returns the same number of predictions as the input rows. A frozen reference row is also used as a regression test to verify that the model probability remains stable within the required tolerance of ±0.001. A live Supabase integration test confirms that a successful `/predict` request creates a corresponding row in the predictions table. The complete test suite currently contains 14 tests, and all 14 tests pass.
 
-## Conclusion
+### Deployment
 
-Overall, the project demonstrates a complete machine learning application from data preparation and neural network training through testing, deployment, and fairness evaluation. The final model provides strong overall classification performance, but the confusion matrix and bias audit demonstrate why accuracy alone is not sufficient to evaluate a machine learning system. The model's higher false negative rate for females and its difficulty identifying the >$50K class should be considered before any real world deployment. Continued evaluation, human oversight, and fairness testing would be necessary before using the system for consequential decisions.
+Income Insight uses a three cloud architecture. Streamlit Community Cloud provides the user interface, Render hosts the FastAPI backend and machine learning model, and Supabase provides persistent database storage. Streamlit communicates with the FastAPI service for predictions while FastAPI handles model inference and database writes. Supabase stores the Adult Income data, training runs, model artifacts, prediction records, and fairness audit information.
+
+The deployed user interface is available at:
+
+https://cst435topic2-azzzknyfkzokhdjk2b4fgy.streamlit.app/
+
+The deployed FastAPI service is available at:
+
+https://cst435topic2.onrender.com
+
+The Supabase project reference is:
+
+`cvjmrqlhdnjuxbkczwrn`
+
+### Conclusion
+
+Overall, Income Insight demonstrates a complete machine learning application that connects data preparation, neural network training, model evaluation, automated testing, cloud deployment, and fairness analysis. The selected model achieved strong overall classification performance with an accuracy of 85.8% and ROC AUC of 0.910. However, the confusion matrix shows that the model has greater difficulty identifying the >$50K class, while the fairness audit shows that women experience a higher false negative rate than men. These findings demonstrate why responsible machine learning requires more than maximizing accuracy. Before the model could be used for consequential real world decisions, its group level performance should continue to be evaluated and appropriate human oversight should be maintained.
 
 ### Reference
 
 English Standard Version Bible. (2001). Crossway.
+
+
+| Run | Configuration | Hidden sizes  | Activation | Dropout | Accuracy | Precision | Recall |    F1 | ROC AUC |   ECE |
+| --- | ------------- | ------------- | ---------- | ------- | -------: | --------: | -----: | ----: | ------: | ----: |
+| 5   | baseline ReLU | 128/64        | ReLU       | 0.20    |    0.858 |     0.749 |  0.612 | 0.673 |   0.910 | 0.007 |
+| 10  | baseline GELU | 128/64        | GELU       | 0.20    |    0.858 |     0.757 |  0.600 | 0.669 |   0.910 | 0.009 |
+| 7   | no dropout    | 128/64        | ReLU       | 0       |    0.857 |     0.725 |  0.646 | 0.683 |   0.911 | 0.013 |
+| 8   | deep ReLU     | 256/128/64/32 | ReLU       | 0.20    |    0.858 |     0.747 |  0.614 | 0.674 |   0.910 | 0.011 |
+
+
