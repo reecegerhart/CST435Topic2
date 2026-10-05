@@ -37,7 +37,7 @@ def api_get(path: str, **params):
 
 
 def api_post(path: str, payload: dict):
-    r = requests.post(f"{API_URL}{path}", json=payload, timeout=120)
+    r = requests.post(f"{API_URL}{path}", json=payload, timeout=600)
     r.raise_for_status()
     return r.json()
 
