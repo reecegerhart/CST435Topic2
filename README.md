@@ -6,7 +6,7 @@ Income Insight is a cloud based neural network application that predicts whether
 
 | Tier | Platform                  | URL                                        |
 | ---- | ------------------------- | ------------------------------------------ |
-| UI   | Streamlit Community Cloud | `YOUR STREAMLIT URL`                       |
+| UI   | Streamlit Community Cloud | `https://cst435topic2-azzzknyfkzokhdjk2b4fgy.streamlit.app/`                       |
 | API  | Render                    | `https://cst435topic2.onrender.com`        |
 | Data | Supabase                  | `https://cvjmrqlhdnjuxbkczwrn.supabase.co` |
 
