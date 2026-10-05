@@ -1,0 +1,11 @@
+# Change vs baseline: depth, two hidden layers -> four.
+name: deep-relu
+hidden_sizes: [256, 128, 64, 32]
+activation: relu
+dropout: 0.2
+lr: 0.001
+weight_decay: 0.0001
+batch_size: 256
+epochs: 60
+patience: 8
+seed: 42
