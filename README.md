@@ -2,8 +2,9 @@
 
 Income Insight is a cloud based neural network application that predicts whether an individual's annual income is above or below $50K using the UCI Adult Income dataset. The application uses a PyTorch multilayer perceptron with a reproducible scikit learn preprocessing pipeline and is deployed across three cloud services. Streamlit provides the user interface, FastAPI hosts the machine learning model and prediction API, and Supabase stores the Adult Income data, model runs, artifacts, and prediction audit records. The application also provides model performance analysis, fairness auditing, batch prediction, and model documentation.
 
-## Video
+## Links
 Youtube: https://youtu.be/1R-CymCtWNQ
+Git repo: https://github.com/reecegerhart/CST435Topic2
 
 ## Live Deployment
 
