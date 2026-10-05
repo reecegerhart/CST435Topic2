@@ -13,7 +13,7 @@ Git repo: https://github.com/reecegerhart/CST435Topic2
 | ---- | ------------------------- | --------------------------------------------------------- |
 | UI   | Streamlit Community Cloud | https://cst435topic2-azzzknyfkzokhdjk2b4fgy.streamlit.app/ |
 | API  | Render                    | https://cst435topic2.onrender.com/healthz                         |
-| Data | Supabase                  | https://cvjmrqlhdnjuxbkczwrn.supabase.co                  |
+| Data | Supabase                  | https://cvjmrqlhdnjuxbkczwrn.supabase.co/rest/v1/                  |
 
 The Supabase project reference is `cvjmrqlhdnjuxbkczwrn`.
 
