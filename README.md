@@ -471,21 +471,33 @@ The remaining submission work consists primarily of finalizing the Model Card, v
 
 ## Engineering Report
 
+### Problem Statement
+
+Income Insight addresses the problem of classifying whether an individual earns more than $50K per year using demographic and employment information from the UCI Adult Income dataset. The project uses a PyTorch multilayer perceptron to learn patterns in the dataset and produce a binary income classification. The goal is to develop a reproducible machine learning system that can preprocess input data, train and evaluate a neural network, provide predictions through a web application, and document the model's performance and potential fairness concerns. The system is deployed using Streamlit Community Cloud, Render, and Supabase so that the user interface, machine learning API, and persistent data storage are separated into distinct components.
+
+### Algorithm of the Solution
+
+The solution begins by loading the UCI Adult Income dataset and separating the input features from the binary income target. The preprocessing pipeline handles missing values, encodes categorical variables, and scales numerical features so that the data can be provided consistently to the neural network. The dataset is divided into training, validation, and test data. The training data is used to learn model parameters, the validation data is used to select the best model checkpoint, and the test data remains unseen until final evaluation.
+
+The processed training data is passed through a PyTorch multilayer perceptron containing two hidden layers with 128 and 64 neurons. During forward propagation, each layer calculates a weighted combination of its inputs and bias values. The result is passed through the activation function before being provided to the next layer. The final layer produces a probability representing the predicted likelihood that an individual earns more than $50K.
+
+Binary cross entropy is used as the cost function to measure the difference between the predicted probabilities and the actual income classes. After the loss is calculated, backpropagation applies the chain rule to calculate the derivatives of the loss with respect to the model weights and biases. The Adam optimizer then uses these gradients to update the model parameters. This process is repeated across multiple batches and epochs, allowing the network to gradually learn weights that reduce the training loss.
+
+The training process uses early stopping based on validation performance. The best validation checkpoint is saved and later evaluated using the unseen test data. During prediction, the model performs forward propagation to produce an output probability. A threshold of 0.50 is then applied to convert the probability into a predicted class. A probability below 0.50 is classified as <=50K, while a probability of 0.50 or greater is classified as >50K.
+
+The final model is evaluated using accuracy, precision, recall, F1 score, ROC AUC, expected calibration error, and a confusion matrix. Additional analysis uses permutation importance to examine feature reliance and a bias audit to compare false positive and false negative rates across sex groups.
+
 ### Decision Justifications
 
 The Income Insight project uses a PyTorch multilayer perceptron to classify whether an individual earns more than $50K per year using information from the UCI Adult Income dataset. The selected model uses two hidden layers with 128 and 64 neurons, ReLU activation, and a dropout rate of 0.20. On the held out test data, the model achieved 85.8 percent accuracy, 74.9 percent precision, 61.2 percent recall, 67.3 percent F1, and a 0.910 ROC AUC.
 
 Several configurations were tested to compare activation functions, network depth, and dropout. The baseline ReLU configuration achieved an F1 score of 0.673. The deeper ReLU configuration achieved a slightly higher F1 score of 0.674, while GELU achieved an F1 score of 0.669. The no dropout configuration achieved the highest F1 score at 0.683 and the highest recall at 64.6 percent, but its expected calibration error was 0.013 compared with 0.007 for the selected baseline.
 
-GELU therefore did not meaningfully outperform ReLU. Although GELU produced slightly higher precision, it produced lower recall and F1, while its calibration was also slightly worse. The baseline ReLU model was selected because it provided a strong overall balance between classification performance and probability calibration.
+GELU therefore did not meaningfully outperform ReLU. Although GELU produced slightly higher precision, it produced lower recall and F1, while its calibration was also slightly worse. The deeper model provided only a very small improvement in F1 without improving accuracy. The no dropout model produced stronger recall and F1, but had worse calibration. The baseline ReLU model was therefore selected because it provided a strong overall balance between classification performance and probability calibration.
 
-The confusion matrix provides a clearer view of where the model struggles. The model correctly classified 5,215 individuals in the <=50K class and 1,072 individuals in the >50K class. It produced 359 false positives and 681 false negatives.
+The confusion matrix provides a clearer view of where the model struggles. The model correctly classified 5,215 individuals in the <=50K class and 1,072 individuals in the >50K class. It produced 359 false positives and 681 false negatives. Because there were substantially more false negatives than false positives, the model has more difficulty identifying individuals who actually earn more than $50K. Its recall for the >50K class was approximately 61.2 percent. This means that a significant portion of individuals who actually belong to the higher income class were incorrectly classified as earning <=50K.
 
-Because there were substantially more false negatives than false positives, the model has more difficulty identifying individuals who actually earn more than $50K. Its recall for the >50K class was approximately 61.2 percent. This means that a significant portion of individuals who actually belong to the higher income class were incorrectly classified as earning <=50K.
-
-Permutation importance was used to determine which features the model relied on most when making predictions. Marital status had the highest importance at 0.06708, followed by capital gain at 0.03980, education number at 0.03752, and age at 0.02580. Occupation had an importance of 0.01677, while hours per week had an importance of 0.01485.
-
-These results provide evidence about which features influence the model's predictive behavior. They should not be interpreted as evidence that these features directly cause differences in income.
+Permutation importance was used to determine which features the model relied on most when making predictions. Marital status had the highest importance at 0.06708, followed by capital gain at 0.03980, education number at 0.03752, and age at 0.02580. Occupation had an importance of 0.01677, while hours per week had an importance of 0.01485. These results provide evidence about which features are most important to the model's predictive behavior. They should not be interpreted as evidence that these features directly cause differences in income.
 
 ### Bias and Fairness Reflection
 
@@ -495,9 +507,9 @@ The false negative rate was 42.9 percent for females and 38.0 percent for males,
 
 These results demonstrate that the model does not make errors equally across the two groups. Males experience more false positives, while females experience more false negatives. The higher female false negative rate means the model is more likely to classify a woman who actually earns above $50K as earning at or below $50K.
 
-Because the Adult dataset contains demographic disparities, these differences should be investigated before using the model in a consequential setting. A difference in error rates does not by itself establish intentional discrimination, but it provides evidence that should not be ignored.
+Because the Adult dataset contains demographic disparities, these differences should be investigated before using the model in a consequential setting. A difference in error rates does not by itself establish intentional discrimination, but it provides evidence that should not be ignored. The model should not be used as the sole basis for decisions involving employment, lending, compensation, or other situations where an incorrect prediction could significantly affect a person.
 
-The model should not be used as the sole basis for decisions involving employment, lending, compensation, or other situations where an incorrect prediction could significantly affect a person. Additional validation, fairness analysis, monitoring, and human oversight would be necessary for any consequential use.
+Additional validation, fairness analysis, monitoring, and human oversight would be necessary for any consequential use. The bias audit should be treated as evidence for further investigation rather than as proof that the model is intentionally discriminatory.
 
 ### Worldview Reflection
 
@@ -507,19 +519,17 @@ The bias audit shows that women are treated worse with respect to false negative
 
 Before deployment, the development team owes the group experiencing the greater disadvantage careful investigation and responsible action. This includes examining the source of the disparity, testing alternative preprocessing and modeling approaches, monitoring performance across groups, and determining whether the model is appropriate for its intended use.
 
-Human oversight should remain part of any consequential decision, and model predictions should be treated as estimates rather than unquestionable judgments.
+Human oversight should remain part of any consequential decision, and model predictions should be treated as estimates rather than unquestionable judgments. Responsible development requires considering how model errors affect different people rather than focusing only on overall accuracy.
 
-### Testing
+### Testing and Validation
 
-The project includes automated Pytest tests covering the required API behavior.
-
-The tests validate the schema used by `/predict`, verify that invalid and missing fields are rejected, and confirm that `/predict_batch` returns the same number of predictions as the input rows.
+The project includes automated Pytest tests covering the required API behavior and model regression behavior. The tests validate the schema used by `/predict`, verify that invalid and missing fields are rejected, and confirm that `/predict_batch` returns the same number of predictions as the input rows.
 
 A frozen reference row is used as a regression test to verify that the model probability remains stable within the required tolerance of ±0.001. This protects against unintended changes to the model or preprocessing pipeline.
 
-A Supabase integration test confirms that a successful `/predict` request creates a corresponding row in the `predictions` table.
+A Supabase integration test confirms that a successful `/predict` request creates a corresponding row in the `predictions` table. This verifies that prediction logging works as required and that the API communicates correctly with the database.
 
-The complete test suite contains 14 tests, and all 14 tests pass.
+The complete test suite contains 14 tests, and all 14 tests pass. These tests provide automated evidence that the deployed application's primary prediction, validation, batch processing, regression, and database logging behaviors operate as expected.
 
 ### Deployment
 
@@ -527,22 +537,24 @@ Income Insight uses a three cloud architecture. Streamlit Community Cloud provid
 
 Streamlit communicates with FastAPI for prediction requests. FastAPI handles model inference, input validation, prediction logging, and communication with Supabase. Supabase stores the Adult Income data, training runs, model artifacts, prediction records, and audit information.
 
-The deployed application is available through Streamlit Community Cloud and the API is available through Render. The Supabase project reference is `cvjmrqlhdnjuxbkczwrn`.
+The deployed application is available through Streamlit Community Cloud, while the API is available through Render. The Supabase project stores the persistent information required by the application. This separation allows the user interface to remain a thin client while the trained model and prediction logic remain behind the API.
 
 ### Conclusion
 
 Overall, Income Insight demonstrates a complete machine learning application that connects data preparation, neural network training, model evaluation, automated testing, cloud deployment, and fairness analysis.
 
-The selected model achieved strong overall classification performance with 85.8 percent accuracy and a 0.910 ROC AUC. However, the confusion matrix shows that the model has greater difficulty identifying the >$50K class, while the fairness audit shows that women experience a higher false negative rate than men.
+The selected model achieved strong overall classification performance with 85.8 percent accuracy and a 0.910 ROC AUC. However, the confusion matrix shows that the model has greater difficulty identifying the >$50K class. The model also does not produce equal error rates across the evaluated sex groups, with women experiencing a higher false negative rate and men experiencing a higher false positive rate.
 
-These findings demonstrate why responsible machine learning requires more than maximizing accuracy. Before the model could be used for consequential real world decisions, its group level performance should continue to be evaluated, disparities should be investigated, and appropriate human oversight should be maintained.
+The controlled comparison shows that different architecture and regularization choices produce different tradeoffs between classification performance and calibration. The selected ReLU model was chosen because it provided a strong balance rather than simply maximizing one metric.
+
+These findings demonstrate why responsible machine learning requires more than maximizing accuracy. Before the model could be used for consequential real world decisions, its group level performance should continue to be evaluated, disparities should be investigated, and appropriate human oversight should be maintained. The model should be treated as a predictive tool rather than an unquestionable decision maker.
 
 ## References
 
-Dua, D., & Graff, C. (2019). UCI machine learning repository. University of California, Irvine, School of Information and Computer Sciences.
+Dua, D., & Graff, C. (2019). *UCI machine learning repository*. University of California, Irvine, School of Information and Computer Sciences.
 
-English Standard Version Bible. (2001). Crossway.
+English Standard Version Bible. (2001). *Holy Bible, English Standard Version*. Crossway.
 
 Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L., Bai, J., & Chintala, S. (2019). PyTorch: An imperative style, high performance deep learning library. *Advances in Neural Information Processing Systems, 32*.
 
-Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, E. (2011). Scikit learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825 to 2830.
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, O., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, E. (2011). Scikit learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825 to 2830.
