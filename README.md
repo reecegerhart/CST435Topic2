@@ -4,6 +4,7 @@ Income Insight is a cloud based neural network application that predicts whether
 
 ## Links
 Youtube: https://youtu.be/1R-CymCtWNQ
+
 Git repo: https://github.com/reecegerhart/CST435Topic2
 
 ## Live Deployment
