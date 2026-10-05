@@ -2,7 +2,7 @@
 
 Usage (repo root, with SUPABASE_URL and SUPABASE_SERVICE_KEY in .env):
 
-    python -m db.seed
+    python -m db.load
 
 Apply db/migrations/001_init.sql in the Supabase SQL Editor first. This script
 only loads data. It downloads Adult from OpenML (~48.8k rows), keeps the model
