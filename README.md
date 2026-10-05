@@ -352,33 +352,34 @@ These results show that overall accuracy does not fully represent the model's li
 
 This project was completed independently, so all project responsibilities were performed by me.
 
-* Selected and prepared the UCI Adult Income dataset.
+* Selected and prepared the UCI Adult Income dataset and configured the training data in Supabase.
 
-* Developed the Supabase database structure and migrations.
+* Developed the Supabase database structure, SQL migrations, and tables for adult income data, predictions, and training runs.
 
-* Implemented the scikit learn preprocessing pipeline.
+* Implemented the scikit learn preprocessing pipeline for missing value imputation, categorical encoding, and numerical scaling.
 
-* Developed and trained the PyTorch multilayer perceptron.
+* Developed and trained the PyTorch multilayer perceptron with configurable hidden layers, activation functions, dropout, learning rate, weight decay, batch size, and epochs.
 
-* Created configurable model experiments for activation functions, dropout, and network depth.
+* Created controlled model experiments comparing ReLU, GELU, dropout, and network depth.
 
-* Evaluated model accuracy, precision, recall, F1 score, ROC AUC, calibration, confusion matrix, and permutation importance.
+* Evaluated model performance using accuracy, precision, recall, F1 score, ROC AUC, expected calibration error, confusion matrix, calibration plots, and permutation importance.
 
-* Developed the FastAPI prediction service and API endpoints.
+* Developed the FastAPI backend and implemented the `/predict`, `/predict_batch`, `/schema`, `/audit`, `/healthz`, and `/version` endpoints.
 
-* Implemented prediction logging and request hashing.
+* Implemented prediction logging, request hashing, model run tracking, and Supabase database integration.
 
-* Implemented the fairness audit and group level error analysis.
+* Implemented the fairness audit and analyzed false positive and false negative rates across sex groups.
 
-* Developed the Streamlit user interface and application tabs.
+* Developed the Streamlit user interface, including the Concepts, Score a Row, Score a CSV, Model Performance, Bias Audit, and Model Card tabs.
 
-* Created the automated Pytest suite covering API validation, batch prediction, regression behavior, and Supabase integration.
+* Created the automated Pytest suite covering schema validation, batch prediction, frozen model regression behavior, API behavior, and Supabase prediction logging.
 
 * Deployed the application using Streamlit Community Cloud, Render, and Supabase.
 
-* Completed the Model Card, README documentation, engineering report, model comparison, fairness analysis, and presentation materials.
+* Completed the Model Card, README documentation, engineering report, model comparison, fairness analysis, testing documentation, and presentation materials.
 
-All code, testing, deployment, documentation, and analysis in this repository represent my individual work.
+All code, testing, deployment, documentation, analysis, and presentation work in this repository represent my individual contributions to the project.
+
 
 ## Project Structure
 
