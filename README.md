@@ -345,3 +345,43 @@ The original three cloud template has been substantially modified into the Incom
 Completed changes include the real Adult Income dataset, a multilayer neural network with multiple hidden layers, configurable model architecture, scikit learn preprocessing, command line training, model configuration comparisons, FastAPI prediction endpoints, batch CSV prediction, prediction logging, fairness auditing, Streamlit performance visualization, model documentation, and automated testing.
 
 The remaining project work consists primarily of completing the final model comparisons, documenting the final performance and fairness results, completing the Model Card and engineering report, replacing the remaining deployment placeholders, and recording the required presentation videos.
+
+# Engineering Report
+
+## Decision Justifications
+
+The Income Insight project uses a PyTorch multilayer perceptron to classify whether an individual earns more than $50K per year using information from the UCI Adult Income dataset. The final model uses two hidden layers with 128 and 64 neurons, ReLU activation, and a dropout rate of 0.20. The model achieved 85.8% accuracy, 74.9% precision, 61.2% recall, 67.3% F1 score, and a 0.910 ROC AUC on the held out test data. These results show that the model is effective at separating the two income classes, although it has more difficulty identifying individuals in the higher income class.
+
+Several configurations were tested to determine which architecture and regularization choices performed best. The baseline ReLU model achieved an F1 score of 0.673. A deeper ReLU model using four hidden layers achieved an F1 score of 0.674, while the GELU configuration achieved an F1 score of 0.669. The no dropout configuration achieved the highest F1 score at 0.683 and the highest recall at 64.6%, but its calibration error was higher at 0.013 compared with 0.007 for the active baseline. GELU therefore did not meaningfully outperform ReLU. The differences between the configurations were relatively small, but the baseline ReLU model provided a strong balance between predictive performance and calibration.
+
+The confusion matrix provides additional information about the model's strengths and weaknesses. The model correctly classified 5,215 individuals in the <=50K class and 1,072 individuals in the >50K class. It produced 359 false positives and 681 false negatives. The larger number of false negatives shows that the model has more difficulty identifying people who actually earn more than $50K. Its 61.2% recall for this class means that a significant portion of higher income individuals are incorrectly classified as earning <=50K. This is important because accuracy alone would not reveal the difference in performance between the two classes.
+
+Permutation importance was used to identify which features the model relied on most. Marital status had the highest importance at 0.06708, followed by capital gain at 0.03980, education level at 0.03752, and age at 0.02580. Occupation and hours per week had smaller importance values of 0.01677 and 0.01485. Native country had the lowest importance at 0.00112. These results indicate which features the model depends on for prediction, but they should not be interpreted as proof that these characteristics directly cause a person's income. The results instead describe how much model performance changes when individual features are randomly shuffled.
+
+## Bias and Fairness Reflection
+
+The bias audit evaluated false positive and false negative rates by sex. The model produced a false positive rate of 2.4% for females and 8.8% for males. This represents a false positive rate gap of approximately 6.4 percentage points. The false negative rate was 42.9% for females and 38.0% for males, producing a gap of approximately 4.9 percentage points.
+
+These results demonstrate that the model does not make errors equally across the two groups. Males experience more false positives, meaning the model is more likely to predict an income above $50K for a male whose actual income is <=50K. Females experience more false negatives, meaning the model is more likely to predict <=50K for a female whose actual income is above $50K. The relatively large false negative rate for females is particularly important because it indicates that the model may underestimate higher income outcomes for women. Because the Adult dataset contains known demographic disparities, these results should be considered before using the classifier in a real decision making environment. The model should not be used as the sole basis for employment, lending, compensation, or other decisions that could materially affect individuals.
+
+## Worldview Reflection
+
+Christian ethics places an obligation on decision makers to pursue impartial judgment rather than simply accepting unequal outcomes when they appear in a model. Deuteronomy 1:17 states, "You shall not be partial in judgment" (English Standard Version Bible, 2001). The bias audit shows that women are treated worse with respect to false negatives because 42.9% of women who actually earn more than $50K were classified incorrectly, compared with 38.0% of men. At the same time, men experience the higher false positive rate. This means fairness cannot be described with a single number because different groups experience different types of errors.
+
+Before deployment, the group experiencing the higher false negative rate should not simply be expected to accept that disadvantage. The developers have a responsibility to investigate the source of the disparity, evaluate additional preprocessing and modeling approaches, and determine whether the model provides an acceptable level of fairness for its intended use. Human oversight should remain part of any consequential decision, and the model's predictions should be treated as estimates rather than unquestionable judgments.
+
+## Testing and Reliability
+
+The project includes automated Pytest tests covering the required API behavior. The tests validate the schema used by `/predict`, verify that invalid and missing fields are rejected, and confirm that `/predict_batch` returns the same number of predictions as input rows. A frozen reference row is also used as a regression test to verify that the model's probability remains stable within the required tolerance of ±0.001. Finally, a live Supabase test confirms that a successful prediction creates a corresponding row in the predictions table. All 14 project tests currently pass.
+
+## Deployment
+
+The application is deployed using a three cloud architecture. Streamlit Cloud provides the user interface, Render hosts the FastAPI backend and model, and Supabase provides the database for Adult Income records, model runs, prediction logs, and audit information. This separation keeps the Streamlit application as a thin client while keeping the trained model and prediction logic behind the FastAPI service. The architecture also allows prediction requests and model runs to be recorded for later evaluation and auditing.
+
+## Conclusion
+
+Overall, the project demonstrates a complete machine learning application from data preparation and neural network training through testing, deployment, and fairness evaluation. The final model provides strong overall classification performance, but the confusion matrix and bias audit demonstrate why accuracy alone is not sufficient to evaluate a machine learning system. The model's higher false negative rate for females and its difficulty identifying the >$50K class should be considered before any real world deployment. Continued evaluation, human oversight, and fairness testing would be necessary before using the system for consequential decisions.
+
+### Reference
+
+English Standard Version Bible. (2001). Crossway.
