@@ -6,7 +6,7 @@ Income Insight is a cloud based neural network application that predicts whether
 
 | Tier | Platform                  | URL                                                       |
 | ---- | ------------------------- | --------------------------------------------------------- |
-| UI   | Streamlit Community Cloud | https://cst435topic2 azzzknyfkzokhdjk2b4fgy.streamlit.app |
+| UI   | Streamlit Community Cloud | https://cst435topic2-azzzknyfkzokhdjk2b4fgy.streamlit.app/ |
 | API  | Render                    | https://cst435topic2.onrender.com                         |
 | Data | Supabase                  | https://cvjmrqlhdnjuxbkczwrn.supabase.co                  |
 
@@ -136,6 +136,35 @@ The architecture is configurable through YAML files in `api/configs/`. The proje
 The deeper configuration uses four hidden layers with 256, 128, 64, and 32 neurons. These configurations allow the project to evaluate how network depth and regularization affect performance.
 
 The model is implemented using PyTorch and trained with the Adam optimizer and binary cross entropy loss.
+
+## MLP Training Process
+
+The Income Insight multilayer perceptron is trained through repeated forward propagation and backpropagation across multiple epochs. During each training step, the preprocessed training data is passed through the network one batch at a time.
+
+During forward propagation, the input matrix is multiplied by the weights of each layer and combined with the corresponding bias values. The resulting values are passed through the activation function before being provided to the next layer. For a hidden layer, the calculation can be represented as:
+
+$$
+Z^{(l)} = W^{(l)}A^{(l-1)} + b^{(l)}
+$$
+
+$$
+A^{(l)} = ReLU(Z^{(l)})
+$$
+
+The final layer produces a probability representing the predicted likelihood that the individual's income is above $50K. Binary cross entropy is used as the cost function to measure the difference between the predicted probabilities and the actual income labels.
+
+After calculating the cost, backpropagation calculates how much each model parameter contributed to the error. The derivatives of the cost with respect to the weights and biases are calculated using the chain rule. These gradients are then used by the Adam optimizer to update the model parameters.
+
+$$
+W^{(l)} = W^{(l)} - \eta \frac{\partial J}{\partial W^{(l)}}
+$$
+
+The training process repeats these forward propagation, cost calculation, backpropagation, and parameter update steps across multiple batches and epochs. The model therefore learns its weights gradually as it minimizes the training loss and improves its predictions.
+
+After training, the network performs forward propagation on unseen test records to produce output probabilities. A threshold of 0.50 is applied to the probability to obtain the final predicted class. A probability below 0.50 is classified as `<=50K`, while a probability of 0.50 or greater is classified as `>50K`.
+
+For the selected model, this process produced 85.8 percent test accuracy and a ROC AUC of 0.910. The results indicate that the trained MLP learned useful relationships between the input features and income classification, although the confusion matrix shows that the model has more difficulty correctly identifying the >50K class.
+
 
 ## Preprocessing
 
