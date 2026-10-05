@@ -1,14 +1,11 @@
-# Baseline: two hidden layers, ReLU, light dropout.
-# Every other config changes exactly ONE thing from this file, so the
-# comparison in the runs table is a controlled experiment.
-# Write small decimals as 0.0001, not 1e-4 (PyYAML reads 1e-4 as a string).
-name: baseline-relu
+# GELU comparison: changes activation from ReLU to GELU.
+name: baseline-gelu
 hidden_sizes: [128, 64]
-activation: relu
+activation: gelu
 dropout: 0.2
 lr: 0.001
 weight_decay: 0.0001
 batch_size: 256
 epochs: 60
-patience: 8      # stop after this many epochs without a better validation loss
+patience: 8
 seed: 42
